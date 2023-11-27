@@ -92,13 +92,13 @@ def train_sam(
             loss_dice = torch.tensor(0., device=fabric.device)
             loss_iou = torch.tensor(0., device=fabric.device)
             for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, iou_predictions):
-                # batch_iou = calc_iou(pred_mask, gt_mask)
-                # loss_focal += focal_loss(pred_mask, gt_mask, num_masks)
+                batch_iou = calc_iou(pred_mask, gt_mask)
+                loss_focal += focal_loss(pred_mask, gt_mask, num_masks)
                 loss_dice += dice_loss(pred_mask, gt_mask, num_masks)
-                # loss_iou += F.mse_loss(iou_prediction, batch_iou, reduction='sum') / num_masks
+                loss_iou += F.mse_loss(iou_prediction, batch_iou, reduction='sum') / num_masks
 
-            # loss_total = 20. * loss_focal + loss_dice + loss_iou
-            loss_total = loss_dice
+            loss_total = 20. * loss_focal + loss_dice + loss_iou
+            # loss_total = loss_dice
             optimizer.zero_grad()
             fabric.backward(loss_total)
             optimizer.step()
@@ -107,7 +107,7 @@ def train_sam(
             end = time.time()
 
             # focal_losses.update(loss_focal.item(), batch_size)
-            dice_losses.update(loss_total.item(), batch_size)
+            dice_losses.update(loss_dice.item(), batch_size)
             # iou_losses.update(loss_iou.item(), batch_size)
             #total_losses.update(loss_total.item(), batch_size)
 
