@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import torch
 import torchvision.transforms as transforms
-from pycocotools.coco import COCO
+# from pycocotools.coco import COCO
 from segment_anything.utils.transforms import ResizeLongestSide
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 
 class COCODataset(Dataset):
 
-    def __init__(self, transform=None, dataset = "training",TV_ratio = 0.8):
+    def __init__(self, transform=None, Name = "training",TV_ratio = 0.8):
         # TV_ratio是tainingset Validationset之間的比例
 #         self.root_dir = root_dir
         self.transform = transform
@@ -21,7 +21,7 @@ class COCODataset(Dataset):
         self.Imgpaths = "/kaggle/input/cpn-raw"
         # 遍歷每個路徑
         files = os.listdir(self.Imgpaths)
-        if(dataset is "training"):
+        if(Name == "training"):
             files_name = files[:int(len(files) * TV_ratio)]
         else:
             files_name = files[int(len(files) * TV_ratio):]
@@ -103,16 +103,16 @@ class ResizeAndPad:
 
 def load_datasets(cfg, img_size):
     transform = ResizeAndPad(img_size)
-    train = COCODataset(transform=transform, dataset = "training", TV_ratio = 0.8)
-    val = COCODataset(transform=transform, dataset = "Validation", TV_ratio = 0.8)
+    train = COCODataset(transform=transform, Name = "training", TV_ratio = 0.8)
+    val = COCODataset(transform=transform, Name = "Validation", TV_ratio = 0.8)
     train_dataloader = DataLoader(train,
                                   batch_size=cfg.batch_size,
                                   shuffle=True,
-                                  num_workers=cfg.num_workers,
+                                  num_workers=torch.cuda.device_count(),
                                   collate_fn=collate_fn)
     val_dataloader = DataLoader(val,
                                 batch_size=cfg.batch_size,
                                 shuffle=True,
-                                num_workers=cfg.num_workers,
+                                num_workers=torch.cuda.device_count(),
                                 collate_fn=collate_fn)
     return train_dataloader, val_dataloader
