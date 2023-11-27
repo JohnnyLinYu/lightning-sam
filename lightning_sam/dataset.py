@@ -12,42 +12,56 @@ from torch.utils.data import Dataset
 
 class COCODataset(Dataset):
 
-    def __init__(self, root_dir, annotation_file, transform=None):
-        self.root_dir = root_dir
+    def __init__(self, transform=None, dataset = "training",TV_ratio = 0.8):
+        # TV_ratio是tainingset Validationset之間的比例
+#         self.root_dir = root_dir
         self.transform = transform
-        self.coco = COCO(annotation_file)
-        self.image_ids = list(self.coco.imgs.keys())
+#         self.coco = COCO(annotation_file)
+        
+        self.Imgpaths = "/kaggle/input/cpn-raw"
+        # 遍歷每個路徑
+        files = os.listdir(self.Imgpaths)
+        if(dataset is "training"):
+            files_name = files[:int(len(files) * TV_ratio)]
+        else:
+            files_name = files[int(len(files) * TV_ratio):]
+        prefix_length = -4
+        prefixes = [file_name[:prefix_length] for file_name in files_name]
+        self.image_ids = prefixes
 
         # Filter out image_ids without any annotations
-        self.image_ids = [image_id for image_id in self.image_ids if len(self.coco.getAnnIds(imgIds=image_id)) > 0]
+        #self.image_ids = [image_id for image_id in self.image_ids if len(self.coco.getAnnIds(imgIds=image_id)) > 0]
 
     def __len__(self):
         return len(self.image_ids)
 
     def __getitem__(self, idx):
         image_id = self.image_ids[idx]
-        image_info = self.coco.loadImgs(image_id)[0]
-        image_path = os.path.join(self.root_dir, image_info['file_name'])
+#         image_info = self.coco(image_id)[0]
+        image_path = os.path.join(self.Imgpaths, image_id + '.png')
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-        ann_ids = self.coco.getAnnIds(imgIds=image_id)
-        anns = self.coco.loadAnns(ann_ids)
+        
+        
         bboxes = []
         masks = []
-
-        for ann in anns:
-            x, y, w, h = ann['bbox']
-            bboxes.append([x, y, x + w, y + h])
-            mask = self.coco.annToMask(ann)
-            masks.append(mask)
+        paths = ["/kaggle/input/mask-f1", "/kaggle/input/mask-s1", "/kaggle/input/mask-s2", "/kaggle/input/mask-s3"]
+        for path in paths:
+            file_path = os.path.join(path, image_id + '.png')
+            im = cv2.imread(file_path)
+            gray=cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+            contours, hierarchy = cv2.findContours(gray,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)[-2:]
+            if len(contours) > 0:
+                x,y,w,h = cv2.boundingRect(contours[0])
+                bboxes.append([x, y, x + w, y + h])
+                masks.append(gray)
 
         if self.transform:
             image, masks, bboxes = self.transform(image, masks, np.array(bboxes))
 
         bboxes = np.stack(bboxes, axis=0)
         masks = np.stack(masks, axis=0)
-        return image, torch.tensor(bboxes), torch.tensor(masks).float()
+        return image, bboxes, masks.float()
 
 
 def collate_fn(batch):
@@ -89,12 +103,8 @@ class ResizeAndPad:
 
 def load_datasets(cfg, img_size):
     transform = ResizeAndPad(img_size)
-    train = COCODataset(root_dir=cfg.dataset.train.root_dir,
-                        annotation_file=cfg.dataset.train.annotation_file,
-                        transform=transform)
-    val = COCODataset(root_dir=cfg.dataset.val.root_dir,
-                      annotation_file=cfg.dataset.val.annotation_file,
-                      transform=transform)
+    train = COCODataset(transform=transform, dataset = "training", TV_ratio = 0.8)
+    val = COCODataset(transform=transform, dataset = "Validation", TV_ratio = 0.8)
     train_dataloader = DataLoader(train,
                                   batch_size=cfg.batch_size,
                                   shuffle=True,
