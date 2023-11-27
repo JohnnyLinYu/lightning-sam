@@ -107,7 +107,7 @@ def train_sam(
             end = time.time()
 
             # focal_losses.update(loss_focal.item(), batch_size)
-            dice_losses.update(loss_dice.item(), batch_size)
+            dice_losses.update(loss_total.item(), batch_size)
             # iou_losses.update(loss_iou.item(), batch_size)
             #total_losses.update(loss_total.item(), batch_size)
 
