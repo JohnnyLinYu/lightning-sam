@@ -107,9 +107,9 @@ def train_sam(
             end = time.time()
 
             # focal_losses.update(loss_focal.item(), batch_size)
-            # dice_losses.update(loss_dice.item(), batch_size)
+            dice_losses.update(loss_dice.item(), batch_size)
             # iou_losses.update(loss_iou.item(), batch_size)
-            total_losses.update(loss_total.item(), batch_size)
+            #total_losses.update(loss_total.item(), batch_size)
 
             fabric.print(f'Epoch: [{epoch}][{iter+1}/{len(train_dataloader)}]'
                          f' | Time [{batch_time.val:.3f}s ({batch_time.avg:.3f}s)]'
