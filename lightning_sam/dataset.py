@@ -18,7 +18,7 @@ class COCODataset(Dataset):
         self.transform = transform
 #         self.coco = COCO(annotation_file)
         
-        self.Imgpaths = "/kaggle/input/cpn-raw"
+        self.Imgpaths = "/kaggle/input/cpn-trainingdata/TrainingSet/RawData"
         # 遍歷每個路徑
         files = os.listdir(self.Imgpaths)
         if(Name == "training"):
@@ -45,7 +45,10 @@ class COCODataset(Dataset):
         
         bboxes = []
         masks = []
-        paths = ["/kaggle/input/mask-f1", "/kaggle/input/mask-s1", "/kaggle/input/mask-s2", "/kaggle/input/mask-s3"]
+        paths = ["/kaggle/input/cpn-trainingdata/TrainingSet/Mask/F1",
+                 "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S1",
+                 "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S2",
+                 "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S3"]
         for path in paths:
             file_path = os.path.join(path, image_id + '.png')
             im = cv2.imread(file_path)
