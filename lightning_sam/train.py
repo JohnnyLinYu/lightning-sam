@@ -100,16 +100,16 @@ def train_sam(
             loss_total = 20. * loss_focal + loss_dice + loss_iou
             # loss_total = loss_dice
             optimizer.zero_grad()
-            fabric.backward(loss_dice)
+            fabric.backward(loss_total)
             optimizer.step()
             scheduler.step()
             batch_time.update(time.time() - end)
             end = time.time()
 
-            # focal_losses.update(loss_focal.item(), batch_size)
+            focal_losses.update(loss_focal.item(), batch_size)
             dice_losses.update(loss_dice.item(), batch_size)
-            # iou_losses.update(loss_iou.item(), batch_size)
-            #total_losses.update(loss_total.item(), batch_size)
+            iou_losses.update(loss_iou.item(), batch_size)
+            total_losses.update(loss_total.item(), batch_size)
 
             fabric.print(f'Epoch: [{epoch}][{iter+1}/{len(train_dataloader)}]'
                          f' | Time [{batch_time.val:.3f}s ({batch_time.avg:.3f}s)]'
