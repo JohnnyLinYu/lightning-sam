@@ -45,10 +45,11 @@ class COCODataset(Dataset):
         
         bboxes = []
         masks = []
-        paths = ["/kaggle/input/cpn-trainingdata/TrainingSet/Mask/F1",
-                 "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S1",
-                 "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S2",
-                 "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S3"]
+        # paths = ["/kaggle/input/cpn-trainingdata/TrainingSet/Mask/F1",
+        #          "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S1",
+        #          "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S2",
+        #          "/kaggle/input/cpn-trainingdata/TrainingSet/Mask/S3"]
+        paths = ["/kaggle/input/cpn-trainingdata/TrainingSet/Mask/F1"]
         for path in paths:
             file_path = os.path.join(path, image_id + '.png')
             im = cv2.imread(file_path)
