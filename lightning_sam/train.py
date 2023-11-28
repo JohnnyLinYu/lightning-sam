@@ -100,7 +100,7 @@ def train_sam(
             loss_total = 20. * loss_focal + loss_dice + loss_iou
             # loss_total = loss_dice
             optimizer.zero_grad()
-            fabric.backward(loss_total)
+            fabric.backward(loss_dice)
             optimizer.step()
             scheduler.step()
             batch_time.update(time.time() - end)
