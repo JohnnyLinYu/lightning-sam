@@ -71,10 +71,10 @@ def train_sam(
     for epoch in range(1, cfg.num_epochs):
         batch_time = AverageMeter()
         data_time = AverageMeter()
-        focal_losses = AverageMeter()
+        # focal_losses = AverageMeter()
         dice_losses = AverageMeter()
-        iou_losses = AverageMeter()
-        total_losses = AverageMeter()
+        # iou_losses = AverageMeter()
+        # total_losses = AverageMeter()
         end = time.time()
         validated = False
 
@@ -88,29 +88,29 @@ def train_sam(
             batch_size = images.size(0)
             pred_masks, iou_predictions = model(images, bboxes)
             num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-            loss_focal = torch.tensor(0., device=fabric.device)
+            # loss_focal = torch.tensor(0., device=fabric.device)
             loss_dice = torch.tensor(0., device=fabric.device)
-            loss_iou = torch.tensor(0., device=fabric.device)
+            # loss_iou = torch.tensor(0., device=fabric.device)
             for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, iou_predictions):
-                batch_iou = calc_iou(pred_mask, gt_mask)
-                loss_focal += focal_loss(pred_mask, gt_mask, num_masks)
+                # batch_iou = calc_iou(pred_mask, gt_mask)
+                # loss_focal += focal_loss(pred_mask, gt_mask, num_masks)
                 loss_dice += dice_loss(pred_mask, gt_mask, num_masks)
-                loss_iou += F.mse_loss(iou_prediction, batch_iou, reduction='sum') / num_masks
+                # loss_iou += F.mse_loss(iou_prediction, batch_iou, reduction='sum') / num_masks
 
-            loss_total = 20. * loss_focal + loss_dice + loss_iou
+            # loss_total = 20. * loss_focal + loss_dice + loss_iou
             # loss_total = loss_dice
             optimizer.zero_grad()
-            fabric.backward(loss_total)
+            fabric.backward(loss_dice)
             optimizer.step()
             scheduler.step()
             batch_time.update(time.time() - end)
             end = time.time()
 
-            focal_losses.update(loss_focal.item(), batch_size)
+            # focal_losses.update(loss_focal.item(), batch_size)
             dice_losses.update(loss_dice.item(), batch_size)
-            iou_losses.update(loss_iou.item(), batch_size)
-            total_losses.update(loss_total.item(), batch_size)
-
+            # iou_losses.update(loss_iou.item(), batch_size)
+            # total_losses.update(loss_total.item(), batch_size)
+            
             fabric.print(f'Epoch: [{epoch}][{iter+1}/{len(train_dataloader)}]'
                          f' | Time [{batch_time.val:.3f}s ({batch_time.avg:.3f}s)]'
                          f' | Data [{data_time.val:.3f}s ({data_time.avg:.3f}s)]'
